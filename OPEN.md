@@ -15,9 +15,9 @@ Hochgeladen auf Ansage mit `SKIP_ROUTES=1`, weil Overpass überlastet war (27–
   im neuen Cache `osm-roads-2` (Pinneberg: 0 Elemente vom 14.11.; Berlin: kürzeste Linie mit 0 m Hauptstraße,
   1 Ampel). Die Planung *hatte* Straßendaten, nur lückenhafte — das „keine Straßendaten“ im Protokoll kommt von
   der späteren Ring-Abfrage. Behoben in `2cbce0e` (`RoadData.validate`, Cache `osm-roads-3`). Danach
-  `./dev routes` grün — aber **ohne** Straßendaten (Overpass 41 s bzw. 502). Ein grüner Lauf **mit** Daten
-  fehlt noch; release-check sagt deshalb STOP für 1.28.
-- 1.28 bereit auf `main` (`2cbce0e`): Weitersagen als erste Menüzeile (Sprechblase mit Herz), Linksabbieger an
+  `./dev routes` grün — aber **ohne** Straßendaten (Overpass 41 s bzw. 502). Auch der Lauf vor dem Upload
+  war grün ohne Daten. Ein grüner Lauf **mit** Daten fehlt noch: nachholen, sobald Overpass unter 10 s antwortet.
+- **1.28 (68) in TestFlight (24.11.2026, `d9f6911`)**, auf Ansage trotz release-check STOP: Weitersagen als erste Menüzeile (Sprechblase mit Herz), Linksabbieger an
   Ampeln kosten eine Wartezeit, Rechtsabbieger sparen die halbe (`BikeCandidate.turnCost`), leere
   Overpass-Antworten verworfen. `./dev check` grün (434 Tests).
 - Prüfliste neu veröffentlichen (neuer Punkt `o16`), Gerätetest Rückweg über den Kreisverkehr.
