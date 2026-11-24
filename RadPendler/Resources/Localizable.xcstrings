@@ -5885,6 +5885,105 @@
           }
         }
       }
+    },
+    "Schau dir RadPendler an: plant deinen Weg zur Arbeit mit Rad, Bahn oder beidem — mit Ampeln, Regen und echter Abfahrtszeit.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check out RadPendler: it plans your commute by bike, train or both — with traffic lights, rain and real departure times."
+          }
+        }
+      }
+    },
+    "Vorschlag wiederherstellen": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore suggestion"
+          }
+        }
+      }
+    },
+    "Dein Text": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your text"
+          }
+        }
+      }
+    },
+    "Der Link zum App Store kommt automatisch darunter.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The App Store link is added below automatically."
+          }
+        }
+      }
+    },
+    "Link": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Link"
+          }
+        }
+      }
+    },
+    "Kopiert": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copied"
+          }
+        }
+      }
+    },
+    "Nur Link kopieren": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy link only"
+          }
+        }
+      }
+    },
+    "Senden über Nachrichten, WhatsApp, Mail …": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send via Messages, WhatsApp, Mail …"
+          }
+        }
+      }
+    },
+    "%@ weitersagen": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share %@"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

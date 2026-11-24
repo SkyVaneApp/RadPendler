@@ -1,5 +1,12 @@
 # Changelog
 
+## Unveröffentlicht — Weitersagen
+
+- **„RadPendler weitersagen“** in den Einstellungen unter „Hilfe und Rechtliches“: ein Blatt mit eigenem,
+  änderbarem Text (der Vorschlag lässt sich wiederherstellen), darunter der App-Store-Link. Senden über das
+  Teilen-Menü (Nachrichten, WhatsApp, Mail, Kopieren …) als ein Text mit Link, oder nur den Link kopieren.
+  Deutsch und Englisch.
+
 ## 1.27 (Build 67)
 
 - **Nie gegen die Kreisverkehrsrichtung (Rad):** um große Kreisverkehre führt oft ein eigener Radweg, der in

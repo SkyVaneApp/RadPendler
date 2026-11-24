@@ -406,6 +406,18 @@ final class RideTrackerTests: XCTestCase {
         XCTAssertFalse(ReviewPrompt.due(version: nil, asked: nil, rides: 5))
     }
 
+    /// „Weitersagen“ schickt den eigenen Text, darunter den Store-Link —
+    /// ein String, damit WhatsApp und Mail beides übernehmen.
+    func testShareInviteHasStoreLinkUnderOwnText() {
+        let invite = ShareInvite.app
+        XCTAssertEqual(invite.url.absoluteString, "https://apps.apple.com/app/id6813997635")
+        XCTAssertEqual(invite.message("  Probier mal  "), "Probier mal\nhttps://apps.apple.com/app/id6813997635")
+        XCTAssertEqual(invite.message(" \n "), invite.url.absoluteString, "leerer Text: nur der Link")
+        XCTAssertTrue(invite.message(invite.defaultText).hasPrefix(invite.defaultText))
+        let withoutID = ShareInvite(appName: "X", appStoreID: nil, fallbackURL: URL(string: "https://example.org/")!, defaultText: "")
+        XCTAssertEqual(withoutID.url.absoluteString, "https://example.org/", "ohne Store-Id die Supportseite")
+    }
+
     /// Am Ziel angekommen, dreht sich die Richtung gleich — unterwegs nicht.
     func testArrivingTurnsTheDirectionAround() {
         XCTAssertTrue(RideSession.shouldTurn(at: east(300), destination: east(0)))

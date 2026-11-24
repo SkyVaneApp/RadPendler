@@ -369,6 +369,7 @@ struct ModeSettingsView: View {
 struct SettingsView: View {
     @Environment(AppSettings.self) private var settings
     @State private var notifications: Alarm.Permission = .unknown
+    @State private var sharing = false
 
     var body: some View {
         @Bindable var settings = settings
@@ -422,6 +423,12 @@ struct SettingsView: View {
                     Link(destination: URL(string: "https://github.com/DeepSkyPlan/RadPendler")!) {
                         Label(L("Quelltext auf GitHub"), systemImage: "chevron.left.forwardslash.chevron.right")
                     }
+                    Button {
+                        sharing = true
+                    } label: {
+                        Label(L("%@ weitersagen", ShareInvite.app.appName), systemImage: "square.and.arrow.up")
+                    }
+                    .sheet(isPresented: $sharing) { ShareAppView() }
                 } header: {
                     Text(L("Hilfe und Rechtliches"))
                 } footer: {

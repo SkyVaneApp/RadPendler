@@ -782,3 +782,16 @@ T.update({
 T.update({
 "OpenStreetMap antwortet gerade nicht": "OpenStreetMap is not answering right now",
 })
+
+T.update({
+"Schau dir RadPendler an: plant deinen Weg zur Arbeit mit Rad, Bahn oder beidem — mit Ampeln, Regen und echter Abfahrtszeit.":
+    "Check out RadPendler: it plans your commute by bike, train or both — with traffic lights, rain and real departure times.",
+"Vorschlag wiederherstellen": "Restore suggestion",
+"Dein Text": "Your text",
+"Der Link zum App Store kommt automatisch darunter.": "The App Store link is added below automatically.",
+"Link": "Link",
+"Kopiert": "Copied",
+"Nur Link kopieren": "Copy link only",
+"Senden über Nachrichten, WhatsApp, Mail …": "Send via Messages, WhatsApp, Mail …",
+"%@ weitersagen": "Share %@",
+})
