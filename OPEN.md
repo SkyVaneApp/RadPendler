@@ -11,6 +11,12 @@ Hochgeladen auf Ansage mit `SKIP_ROUTES=1`, weil Overpass überlastet war (27–
 `./dev rules` grün, 429 Tests grün, release-check GO.
 
 **Offen:**
+- **`./dev routes` ist rot ab 1.27 (24.11.2026, mit Straßendaten, zweimal reproduziert):** Rathaus Steglitz ↔
+  Berlin Hbf und Pinneberg → Hamburg Hbf — „optimal“ fällt auf die schnellste Linie (0 m Fahrradstraße, 0 m an
+  der Prinzregentenstraße); München Pasing „optimal“ 1,6 statt 3,0 km Fahrradstraße. Derselbe Lauf mit 1.26
+  (`c4951a8`) ist grün („optimal · ruhig“). Regression liegt im Kreisverkehr-Diff `c4951a8..157defb`
+  (`RouteCandidates`, `TripPlanner.rightWayRound`) — auch bei „keine Straßendaten“. Bis behoben: kein
+  Upload; 1.28 (Weitersagen) wartet deshalb.
 - `./dev routes` mit Straßendaten nachholen, sobald Overpass schnell antwortet (Probe-`curl` unter 10 s).
   Muss grün sein und Kreisverkehre am Weg zeigen. Wird es rot, ist das ein Fehler in 1.27.
 - Prüfliste neu veröffentlichen (neuer Punkt `o16`), Gerätetest Rückweg über den Kreisverkehr.
