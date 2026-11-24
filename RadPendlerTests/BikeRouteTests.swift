@@ -900,4 +900,90 @@ extension BikeRouteTests {
         let evicted = await cache.stations(for: StationCache.key(here, radius: 5000, productMask: 1))
         XCTAssertNil(evicted, "die älteste fliegt hinaus")
     }
+
+    // MARK: Links- und Rechtsabbieger an Ampeln (Nutzer, 24.11.2026)
+
+    /// Nach Norden bis zur Ampel, dann `east` Meter nach Osten (negativ:
+    /// Westen). Stützpunkte alle 10 m, wie BRouter sie liefert.
+    private func corner(east: Double) -> (route: [CLLocationCoordinate2D], signal: CLLocationCoordinate2D) {
+        let alex = CLLocationCoordinate2D(latitude: 52.5210, longitude: 13.4130)
+        let dLat = 1 / 111_320.0, dLon = 1 / (111_320.0 * cos(alex.latitude * .pi / 180))
+        var r: [CLLocationCoordinate2D] = []
+        for m in stride(from: 0.0, through: 200, by: 10) {
+            r.append(.init(latitude: alex.latitude + m * dLat, longitude: alex.longitude))
+        }
+        let top = r.last!
+        for m in stride(from: 10.0, through: abs(east), by: 10) {
+            r.append(.init(latitude: top.latitude, longitude: top.longitude + (east < 0 ? -m : m) * dLon))
+        }
+        return (r, top)
+    }
+
+    func testATurnAtALightIsCountedAsLeftOrRight() {
+        let right = corner(east: 200), left = corner(east: -200)
+        XCTAssertEqual(RouteAnalyzer.turnsAtSignals(right.route, [right.signal]).right, 1)
+        XCTAssertEqual(RouteAnalyzer.turnsAtSignals(right.route, [right.signal]).left, 0)
+        XCTAssertEqual(RouteAnalyzer.turnsAtSignals(left.route, [left.signal]).left, 1)
+        // Geradeaus über die Ampel ist keins von beiden.
+        let straight = corner(east: 0)
+        XCTAssertEqual(RouteAnalyzer.turnsAtSignals(straight.route, [straight.route[10]]).left, 0)
+        XCTAssertEqual(RouteAnalyzer.turnsAtSignals(straight.route, [straight.route[10]]).right, 0)
+        // Eine Ampel abseits der Linie zählt nicht.
+        let far = CLLocationCoordinate2D(latitude: right.signal.latitude + 0.002, longitude: right.signal.longitude)
+        XCTAssertEqual(RouteAnalyzer.turnsAtSignals(right.route, [far]).right, 0)
+    }
+
+    private func turning(_ name: BikeLineSource, km: Double, left: Int, right: Int) -> BikeCandidate {
+        var c = candidate(name, km: km, signals: 30, crossings: 4, mainKm: 3)
+        c.stats?.leftAtSignals = left
+        c.stats?.rightAtSignals = right
+        return c
+    }
+
+    /// Hin über die Linksabbieger, zurück über die Rechtsabbieger: gleich
+    /// lang, gleich viele Ampeln — die mit den Rechtsabbiegern ist schneller.
+    func testRightTurnsBeatLeftTurnsAtTheLights() {
+        let s = PlanSettings()
+        let lefty = turning(.brouter(.fastbike), km: 10.0, left: 4, right: 0)
+        let righty = turning(.brouter(.safety), km: 10.1, left: 0, right: 4)
+        XCTAssertLessThan(righty.computedTime(s), lefty.computedTime(s))
+        XCTAssertEqual(lefty.computedTime(s) - righty.computedTime(s),
+                       6 * Double(s.signalWaitSeconds) - 100 / s.bikeSpeedMps, accuracy: 1)
+        var four = s
+        four.bikeOptions = 4
+        let picked = BikeCandidate.pick([lefty, righty], settings: four)
+        XCTAssertEqual(picked.first { $0.1.contains(.fastest) }?.0.source, .brouter(.safety))
+    }
+
+    /// „optimal“ ist die Mischlinie — es sei denn, eine andere biegt seltener
+    /// links ab und ist dabei in allem mindestens so gut.
+    func testOptimalLeavesTheMixForFewerLeftTurns() {
+        let s = PlanSettings()
+        let mix = turning(.brouter(.trekking), km: 10.0, left: 5, right: 0)
+        let other = turning(.brouter(.fastbike), km: 10.0, left: 1, right: 2)
+        var four = s
+        four.bikeOptions = 4
+        XCTAssertEqual(BikeCandidate.pick([mix, other], settings: four).first { $0.1.contains(.balanced) }?.0.source,
+                       .brouter(.fastbike))
+        // Kostet sie dafür Ruhe, bleibt die Mischlinie.
+        var noisy = other
+        noisy.stats?.mainRoadMeters = 6_000
+        XCTAssertEqual(BikeCandidate.pick([mix, noisy], settings: four).first { $0.1.contains(.balanced) }?.0.source,
+                       .brouter(.trekking))
+    }
+
+    // MARK: Abgebrochene Overpass-Antworten (24.11.2026)
+
+    /// Overpass bricht mit `200` ab: eine leere Antwort für 20 km oder eine mit
+    /// `remark: runtime error` darf nie als die Strecke gespeichert werden.
+    func testAnIncompleteOverpassAnswerIsRejected() throws {
+        let empty = Data(#"{"version":0.6,"elements":[]}"#.utf8)
+        XCTAssertThrowsError(try RoadData.validate(empty, corridorMeters: 20_000))
+        // Ein kurzes Nachholstück darf leer sein — da liegt wirklich nichts.
+        XCTAssertNoThrow(try RoadData.validate(empty, corridorMeters: 300))
+        let timedOut = Data(#"{"elements":[{"type":"node","id":1,"lat":52.52,"lon":13.41}],"remark":"runtime error: Query timed out in \"query\" at line 3 after 26 seconds."}"#.utf8)
+        XCTAssertThrowsError(try RoadData.validate(timedOut, corridorMeters: 20_000))
+        let fine = Data(#"{"elements":[{"type":"node","id":1,"lat":52.52,"lon":13.41}]}"#.utf8)
+        XCTAssertNoThrow(try RoadData.validate(fine, corridorMeters: 20_000))
+    }
 }

@@ -34,6 +34,26 @@ struct ShareInvite: Equatable {
     }
 }
 
+/// Das Zeichen fürs Weitersagen: eine Sprechblase mit Herz — „erzähl’s
+/// weiter“, wie unter Freunden, nicht das nüchterne Teilen-Symbol von iOS.
+/// Gewählt am 24.11.2026 (Skizze `x_Skizzen/radp/2026-11-24_weitersagen-icons-2.png`, Nr. 1).
+struct ShareInviteIcon: View {
+    /// Wächst mit der Schriftgröße, wie die Blase selbst.
+    @ScaledMetric(relativeTo: .body) private var heart: CGFloat = 7
+
+    var body: some View {
+        Image(systemName: "bubble.left.fill")
+            .foregroundStyle(Theme.accent)
+            .overlay {
+                Image(systemName: "heart.fill")
+                    .font(.system(size: heart, weight: .bold))
+                    .foregroundStyle(.white)
+                    .offset(y: -1.5)
+                    .accessibilityHidden(true)
+            }
+    }
+}
+
 struct ShareAppView: View {
     var invite = ShareInvite.app
     @Environment(\.dismiss) private var dismiss

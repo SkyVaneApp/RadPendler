@@ -795,3 +795,7 @@ T.update({
 "Senden über Nachrichten, WhatsApp, Mail …": "Send via Messages, WhatsApp, Mail …",
 "%@ weitersagen": "Share %@",
 })
+
+T.update({
+"OpenStreetMap-Daten: unvollständige Antwort": "OpenStreetMap data: incomplete answer",
+})

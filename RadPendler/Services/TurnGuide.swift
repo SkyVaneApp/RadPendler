@@ -162,9 +162,21 @@ enum TurnGuide {
 
     static func length(_ route: [CLLocationCoordinate2D]) -> Double { cumulative(route).last ?? 0 }
 
+    /// Wie weit die Linie an einem Punkt die Richtung ändert, gemessen über
+    /// `reach` Meter davor und danach: −180…180, negativ ist links. Über eine
+    /// ganze Kreuzung gemessen, damit ein indirektes Linksabbiegen — erst
+    /// geradeaus über die Kreuzung, dann von der Ecke aus quer — als das
+    /// zählt, was es ist: links.
+    static func change(on route: [CLLocationCoordinate2D], cum: [Double], at i: Int,
+                       reach: Double) -> Double? {
+        guard let before = bearing(route, around: i, cum: cum, back: true, window: reach),
+              let after = bearing(route, around: i, cum: cum, back: false, window: reach) else { return nil }
+        return signedDifference(from: before, to: after)
+    }
+
     /// Direction of the road `window` metres before or after a point.
     private static func bearing(_ route: [CLLocationCoordinate2D], around i: Int,
-                                cum: [Double], back: Bool) -> Double? {
+                                cum: [Double], back: Bool, window: Double = window) -> Double? {
         let target = back ? cum[i] - window : cum[i] + window
         var j = i
         while back ? (j > 0 && cum[j] > target) : (j < route.count - 1 && cum[j] < target) {

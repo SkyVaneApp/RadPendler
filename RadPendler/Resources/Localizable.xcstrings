@@ -3103,6 +3103,17 @@
         }
       }
     },
+    "OpenStreetMap-Daten: unvollständige Antwort": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenStreetMap data: incomplete answer"
+          }
+        }
+      }
+    },
     "OpenStreetMap-Daten werden noch geholt": {
       "extractionState": "manual",
       "localizations": {

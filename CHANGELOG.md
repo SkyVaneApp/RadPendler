@@ -5,7 +5,17 @@
 - **„RadPendler weitersagen“** in den Einstellungen unter „Hilfe und Rechtliches“: ein Blatt mit eigenem,
   änderbarem Text (der Vorschlag lässt sich wiederherstellen), darunter der App-Store-Link. Senden über das
   Teilen-Menü (Nachrichten, WhatsApp, Mail, Kopieren …) als ein Text mit Link, oder nur den Link kopieren.
-  Deutsch und Englisch.
+  Deutsch und Englisch. Dazu als **erste Zeile im Menü** (☰), mit eigenem Zeichen: Sprechblase mit Herz.
+- **Rechts abbiegen zählt, links kostet (Rad):** an jeder Ampelkreuzung erkennt die Bewertung, ob die Linie links
+  oder rechts abbiegt. Links an der Ampel kostet eine zweite Wartezeit (indirekt abbiegen), rechts spart die halbe.
+  Hin und zurück werden dadurch verschieden bewertet — morgens kann eine andere Linie die bessere sein als abends.
+  „Optimal“ bleibt die Mischlinie, außer eine andere biegt seltener links ab und ist dabei schneller, ausgewogener
+  und nicht unruhiger.
+- **Abgebrochene OpenStreetMap-Antworten werden verworfen:** Overpass meldet eine Zeitüberschreitung mit einer halben
+  oder leeren Antwort statt mit einem Fehler. Die wurde bisher dreißig Tage lang als die Strecke gespeichert —
+  ohne Ampeln und Hauptstraßen, und die kürzeste Linie durch die Lücke wurde „optimal“ (Ursache für `./dev routes`
+  rot seit 1.27). Solche Antworten werden jetzt abgelehnt und in Ruhe neu geholt; der Zwischenspeicher wird einmal
+  geleert.
 
 ## 1.27 (Build 67)
 

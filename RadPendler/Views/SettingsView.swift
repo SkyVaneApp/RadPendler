@@ -426,7 +426,7 @@ struct SettingsView: View {
                     Button {
                         sharing = true
                     } label: {
-                        Label(L("%@ weitersagen", ShareInvite.app.appName), systemImage: "square.and.arrow.up")
+                        Label { Text(L("%@ weitersagen", ShareInvite.app.appName)) } icon: { ShareInviteIcon() }
                     }
                     .sheet(isPresented: $sharing) { ShareAppView() }
                 } header: {

@@ -27,6 +27,7 @@ struct ContentView: View {
     /// kostet ein halbes Dutzend Anfragen und wirft die Auswahl weg.
     @State private var settingsMark: SettingsMark?
     @State private var showHelp = false
+    @State private var showShare = false
     @State private var showWaypoints = false
     @State private var showMenu = false
     @State private var showRides = false
@@ -180,6 +181,7 @@ struct ContentView: View {
                 }
             }
             .sheet(isPresented: $showHelp) { HelpView() }
+            .sheet(isPresented: $showShare) { ShareAppView() }
             .sheet(isPresented: $showWaypoints, onDismiss: refresh) { WaypointSheet() }
             .sheet(isPresented: $showRides) { RidesView() }
             // Right after arriving is the one moment the numbers get read.
@@ -470,6 +472,10 @@ struct ContentView: View {
             // und zwar oben abgeschnitten, wo niemand danach sucht.
             ScrollView {
             VStack(alignment: .leading, spacing: 0) {
+                // Ganz oben (Nutzer, 24.11.2026): auf dem Startbildschirm ist
+                // neben Wetter, Countdown und Menü kein Platz mehr.
+                menuRow(L("%@ weitersagen", ShareInvite.app.appName), icon: ShareInviteIcon()) { showShare = true }
+                Divider().padding(.leading, 44)
                 menuRow(L("Fahrten"), "list.bullet.rectangle") { showRides = true }
                 Divider().padding(.leading, 44)
                 ForEach(SettingsPage.allCases) { page in
@@ -525,13 +531,17 @@ struct ContentView: View {
     }
 
     private func menuRow(_ title: String, _ symbol: String, action: @escaping () -> Void) -> some View {
+        menuRow(title, icon: Image(systemName: symbol), action: action)
+    }
+
+    private func menuRow(_ title: String, icon: some View, action: @escaping () -> Void) -> some View {
         Button {
             showMenu = false
             // One runloop later: a sheet presented while the popover is still
             // going away is swallowed.
             DispatchQueue.main.async(execute: action)
         } label: {
-            Label(title, systemImage: symbol)
+            Label { Text(title) } icon: { icon }
                 .font(.system(.body, design: .rounded))
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 16)

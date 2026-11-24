@@ -220,6 +220,27 @@ struct BikeCandidate {
     /// lässt, welche der beiden Zahlen gewonnen hat.
     func computedTime(_ s: PlanSettings) -> TimeInterval {
         s.computedRideTime(meters: route.distance, signals: signals, learned: learned, ascent: ascent)
+            + turnCost(s)
+    }
+
+    /// Links an der Ampel kostet eine zweite Wartezeit — auf dem Rad biegt man
+    /// in Berlin meist indirekt ab: über die Kreuzung, an der Ecke wieder
+    /// warten. Rechts kommt man oft mit der ersten Grünphase durch und spart
+    /// die halbe. „Morgens am Hbf über die Perleberger Straße, weil dort
+    /// weniger langsame Linksabbieger sind, abends über den Hbf, weil dann nur
+    /// Rechtsabbieger“ (Nutzer, 24.11.2026). Hin und zurück sind deshalb zwei
+    /// verschiedene Rechnungen, auch auf derselben Straße.
+    ///
+    /// Nur in der Rechnung, die Linien vergleicht — die angezeigte Fahrzeit
+    /// kommt aus dem gemessenen Schnitt, und der hat das Warten schon drin.
+    static let leftTurnWaits = 1.0
+    static let rightTurnSaves = 0.5
+
+    func turnCost(_ s: PlanSettings) -> TimeInterval {
+        guard let stats else { return 0 }
+        let flat = TimeInterval(s.signalWaitSeconds)
+        return flat * (Self.leftTurnWaits * Double(stats.leftAtSignals)
+                       - Self.rightTurnSaves * Double(stats.rightAtSignals))
     }
 
     /// Ampeln dieser Linie: aus OpenStreetMap, wo analysiert, sonst vom Router.
@@ -363,6 +384,24 @@ struct BikeCandidate {
         return out
     }
 
+    /// Die Mischlinie bleibt „optimal“ — außer eine andere vernünftige Linie
+    /// biegt an weniger Ampeln links ab und ist dabei schneller, in der Wertung
+    /// besser und nicht unruhiger (keine Fahrradstraße verloren). Ohne das
+    /// hätten die Abbiegekosten „optimal“ nie erreicht, weil dort die
+    /// Mischlinie gesetzt ist.
+    static func fewerLeftTurns(than mix: Int, in pool: [Int], _ all: [BikeCandidate],
+                               _ s: PlanSettings) -> Int {
+        let m = all[mix]
+        let better = pool.filter { i in
+            let c = all[i]
+            return (c.stats?.leftAtSignals ?? .max) < (m.stats?.leftAtSignals ?? 0)
+                && c.computedTime(s) < m.computedTime(s)
+                && c.balancedScore(s) < m.balancedScore(s)
+                && c.unrest <= m.unrest
+        }
+        return better.min { all[$0].balancedScore(s) < all[$1].balancedScore(s) } ?? mix
+    }
+
     /// schnellst = kürzeste Fahrzeit (Ampeln und Höhenmeter inbegriffen),
     /// ruhigst = am wenigsten Störung, verkehrsarm = am seltensten wegen des
     /// Verkehrs anhalten, optimal = bestes Verhältnis von Zeit und Störung.
@@ -424,7 +463,7 @@ struct BikeCandidate {
             // „ruhig", und die Mischlinie stand als namenlose „Alternative" an
             // vierter Stelle. Seit „ruhig" eine eigene Linie hat, muss „optimal"
             // nicht mehr die ruhigste sein.
-            let mix = pool.first { all[$0].source == .brouter(.trekking) }
+            let mix = pool.first { all[$0].source == .brouter(.trekking) }.map { fewerLeftTurns(than: $0, in: pool, all, s) }
             balanced = mix ?? pool.min { all[$0].balancedScore(s) < all[$1].balancedScore(s) } ?? fastest
         } else {
             // Ohne Straßendaten bleibt, was der Router selbst sagt: die

@@ -83,6 +83,27 @@ struct RoadData {
 
     /// Zwei Antworten in einer, als dieselbe Art Datei: die Elemente beider
     /// hintereinander. Was dabei doppelt kommt, sortiert `parse` aus.
+    /// Ab dieser Länge kann ein Schlauch nicht leer sein: auf zwei Kilometern
+    /// liegt immer eine Ampel oder eine große Straße.
+    static let emptyIsImplausible = 2_000.0
+
+    /// Overpass meldet eine Zeitüberschreitung nicht mit einem Fehlercode,
+    /// sondern mit `200` und einer halben Antwort — mit `remark: runtime
+    /// error …` dahinter, oder ganz ohne Elemente. Bis 1.27 wurde so etwas
+    /// gespeichert, als wäre es die Strecke: dreißig Tage lang ohne Ampeln und
+    /// ohne Hauptstraßen, und die kürzeste Linie durch die Lücke sah aus wie
+    /// die ruhigste („optimal“ ohne Fahrradstraße, `./dev routes` rot seit
+    /// 1.27, gefunden 24.11.2026: eine leere Antwort für Pinneberg vom 14.11.).
+    static func validate(_ data: Data, corridorMeters: Double) throws {
+        guard let root = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let elements = root["elements"] as? [Any] else { throw OverpassError.malformed }
+        if let remark = root["remark"] as? String,
+           remark.localizedCaseInsensitiveContains("error") || remark.localizedCaseInsensitiveContains("timed out") {
+            throw OverpassError.incomplete
+        }
+        if elements.isEmpty, corridorMeters >= emptyIsImplausible { throw OverpassError.incomplete }
+    }
+
     static func merged(_ a: Data, _ b: Data) -> Data {
         func elements(_ d: Data) -> [Any] {
             let root = Log.attempt("Straßendaten zusammenlegen (lesen)") { try JSONSerialization.jsonObject(with: d) }
@@ -99,8 +120,11 @@ struct RoadData {
         case stillFetching
         /// Overpass hat eben abgelehnt; für ein paar Minuten wird nicht gefragt.
         case unavailable
+        /// Die Antwort kam mit 200, ist aber abgebrochen oder leer.
+        case incomplete
         var errorDescription: String? {
             switch self {
+            case .incomplete: L("OpenStreetMap-Daten: unvollständige Antwort")
             case .malformed: L("OpenStreetMap-Daten: unerwartete Antwort")
             case .stillFetching: L("OpenStreetMap-Daten werden noch geholt")
             case .unavailable: L("OpenStreetMap antwortet gerade nicht")
@@ -122,6 +146,15 @@ struct Corridor: Codable, Equatable {
     var points: [[Double]]
     /// Radius um jeden Punkt, in Metern.
     var radius: Double
+
+    /// Wie lang die Linie durch die Stützpunkte ist.
+    var length: Double {
+        zip(points, points.dropFirst()).reduce(0) { sum, pair in
+            guard pair.0.count == 2, pair.1.count == 2 else { return sum }
+            return sum + CLLocationCoordinate2D(latitude: pair.0[0], longitude: pair.0[1])
+                .distance(to: CLLocationCoordinate2D(latitude: pair.1[0], longitude: pair.1[1]))
+        }
+    }
 
     /// Abstand der Stützpunkte. Enger als der Radius, sonst hat der Schlauch
     /// Löcher zwischen den Punkten.
@@ -325,13 +358,14 @@ actor RoadDataStore {
     private let maxAge: TimeInterval = 30 * 86_400
     /// `osm-roads-2` seit 1.27: die Antworten tragen jetzt auch die
     /// Kreisverkehre. Eine ältere hätte keine und ließe dreißig Tage lang
-    /// jede Linie gegen den Verkehr um den Ring durch; der alte Ordner wird
-    /// beim ersten Zugriff gelöscht.
+    /// jede Linie gegen den Verkehr um den Ring durch. `osm-roads-3` seit
+    /// 1.28: in `-2` können abgebrochene, leere Antworten liegen (`validate`).
+    /// Die alten Ordner werden beim ersten Zugriff gelöscht.
     private var directory: URL {
         if let folder { return folder }
         let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
         Self.dropLegacy(in: caches)
-        return caches.appendingPathComponent("osm-roads-2")
+        return caches.appendingPathComponent("osm-roads-3")
     }
 
     nonisolated(unsafe) private static var legacyChecked = false
@@ -339,9 +373,11 @@ actor RoadDataStore {
     private static func dropLegacy(in caches: URL) {
         guard !legacyChecked else { return }
         legacyChecked = true
-        let old = caches.appendingPathComponent("osm-roads")
-        guard FileManager.default.fileExists(atPath: old.path) else { return }
-        Log.attempt("alte Straßendaten löschen") { try FileManager.default.removeItem(at: old) }
+        for name in ["osm-roads", "osm-roads-2"] {
+            let old = caches.appendingPathComponent(name)
+            guard FileManager.default.fileExists(atPath: old.path) else { continue }
+            Log.attempt("alte Straßendaten löschen") { try FileManager.default.removeItem(at: old) }
+        }
     }
 
     /// So lange wartet eine Planung auf Straßendaten, die erst geholt werden
@@ -703,6 +739,7 @@ actor RoadDataStore {
         if let http = response as? HTTPURLResponse, http.statusCode != 200 {
             throw URLError(.badServerResponse)
         }
+        try RoadData.validate(data, corridorMeters: corridor.length)
         return data
     }
 }
@@ -722,6 +759,12 @@ struct BikeRouteStats: Equatable {
     /// Sie sind in `signals` mitgezählt und stehen hier noch einmal, weil sie
     /// ihre eigene Wartezeit mitbringen — siehe `PlanSettings.signalWait`.
     var learnedSignals: [LearnedSignal] = []
+    /// An wie vielen dieser Ampelkreuzungen die Linie links bzw. rechts
+    /// abbiegt. Links heißt auf dem Rad meist indirekt, also zweimal warten;
+    /// rechts kommt man oft mit der ersten Grünphase durch (Nutzer,
+    /// 24.11.2026). Siehe `BikeCandidate.turnCost`.
+    var leftAtSignals = 0
+    var rightAtSignals = 0
 
     /// Metre-equivalent of noise and stress: a crossing is as bad as 300 m
     /// beside a main road, a traffic light as 100 m.
@@ -848,9 +891,33 @@ enum RouteAnalyzer {
             }
             last = hit.s
         }
+        let turns = turnsAtSignals(route, junctions.map(\.c))
         return BikeRouteStats(signals: junctions.count, crossings: crossings.map(\.name),
                               mainRoadMeters: main, signalPoints: junctions.map(\.c),
-                              learnedSignals: junctions.compactMap(\.learned))
+                              learnedSignals: junctions.compactMap(\.learned),
+                              leftAtSignals: turns.left, rightAtSignals: turns.right)
+    }
+
+    /// Wie weit vor und hinter einer Ampelkreuzung die Richtung gemessen wird:
+    /// über die ganze Kreuzung, auch über eine große wie am Hauptbahnhof.
+    static let turnReach = 40.0
+    /// Ab diesem Winkel ist es ein Abbiegen, kein Schwenk der Straße.
+    static let turnAngle = 50.0
+
+    /// Je Ampelkreuzung einmal: biegt die Linie dort links ab, rechts oder
+    /// fährt sie durch.
+    static func turnsAtSignals(_ route: [CLLocationCoordinate2D],
+                               _ junctions: [CLLocationCoordinate2D]) -> (left: Int, right: Int) {
+        guard route.count > 2, !junctions.isEmpty else { return (0, 0) }
+        let cum = TurnGuide.cumulative(route)
+        var left = 0, right = 0
+        for j in junctions {
+            guard let i = route.indices.min(by: { route[$0].distance(to: j) < route[$1].distance(to: j) }),
+                  route[i].distance(to: j) <= 30,
+                  let change = TurnGuide.change(on: route, cum: cum, at: i, reach: turnReach) else { continue }
+            if change <= -turnAngle { left += 1 } else if change >= turnAngle { right += 1 }
+        }
+        return (left, right)
     }
 
     static func pointSegment(_ p: SIMD2<Double>, _ a: SIMD2<Double>, _ b: SIMD2<Double>) -> Double {
