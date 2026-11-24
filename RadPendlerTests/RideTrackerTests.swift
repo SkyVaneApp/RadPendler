@@ -406,6 +406,13 @@ final class RideTrackerTests: XCTestCase {
         XCTAssertFalse(ReviewPrompt.due(version: nil, asked: nil, rides: 5))
     }
 
+    /// Regel des Nutzers (24.11.2026): auf dem Hauptbildschirm nur bei jedem 5. Start.
+    func testTellFriendOnHomeOnlyEveryFifthLaunch() {
+        let shown = (1...20).filter(TellFriendSchedule.onHome(launch:))
+        XCTAssertEqual(shown, [5, 10, 15, 20])
+        XCTAssertFalse(TellFriendSchedule.onHome(launch: 0))
+    }
+
     /// „Weitersagen“ schickt den eigenen Text, darunter den Store-Link —
     /// ein String, damit WhatsApp und Mail beides übernehmen.
     func testShareInviteHasStoreLinkUnderOwnText() {

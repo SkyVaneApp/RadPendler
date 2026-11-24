@@ -30,6 +30,7 @@ struct ContentView: View {
     @State private var showWaypoints = false
     @State private var showMenu = false
     @State private var showRides = false
+    @State private var showShare = false
     @State private var editing: PlaceField?
     /// For the commute button and the ride button; a single fix, then forgotten.
     @State private var locator = LocationService()
@@ -160,6 +161,13 @@ struct ContentView: View {
                 if #available(iOS 26.0, *) {
                     ToolbarSpacer(.fixed, placement: .topBarTrailing)
                 }
+                // Weitersagen neben dem Zahnrad, in der Leiste statt über der
+                // Karte: dort ist Platz, und die Karte bleibt frei. Nur bei
+                // jedem fünften Start (`TellFriendSchedule`), und während einer
+                // Fahrt nicht — da gehört die Leiste der Ankunftszeit.
+                if TellFriendSchedule.showOnHome && !tracker.isRecording {
+                    ToolbarItem(placement: .topBarTrailing) { shareButton }
+                }
                 ToolbarItem(placement: .topBarTrailing) { menu }
             }
             // The warnings have to survive a locked screen, so they are real
@@ -182,6 +190,7 @@ struct ContentView: View {
             .sheet(isPresented: $showHelp) { HelpView() }
             .sheet(isPresented: $showWaypoints, onDismiss: refresh) { WaypointSheet() }
             .sheet(isPresented: $showRides) { RidesView() }
+            .sheet(isPresented: $showShare) { ShareAppView() }
             // Right after arriving is the one moment the numbers get read.
             .sheet(item: Binding(get: { tracker.finished }, set: { if $0 == nil { tracker.clearFinished() } }),
                    onDismiss: askForReviewIfDue) { ride in
@@ -458,9 +467,20 @@ struct ContentView: View {
     /// A popover rather than a `Menu`: an iOS menu renders plain text only, so
     /// the version line could not be small and grey in one, and the language
     /// picker would not fit.
+    /// „RadPendler weitersagen“ — dasselbe Blatt wie in den Einstellungen.
+    private var shareButton: some View {
+        Button { showShare = true } label: {
+            TellFriendIcon(size: 17)
+                .foregroundStyle(Theme.accent)
+        }
+        .accessibilityLabel(L("%@ weitersagen", ShareInvite.app.appName))
+    }
+
     private var menu: some View {
         Button { showMenu = true } label: {
-            Image(systemName: "line.3.horizontal")
+            // Das Zahnrad wie in jeder App des Nutzers: hier geht es zu den
+            // Einstellungen (bis 1.28 drei Striche).
+            Image(systemName: "gearshape")
                 .font(.system(size: 15, weight: .semibold))
         }
         .accessibilityLabel(L("Menü"))

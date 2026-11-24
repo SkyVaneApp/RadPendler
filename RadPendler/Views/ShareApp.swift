@@ -74,3 +74,40 @@ struct ShareAppView: View {
         }
     }
 }
+
+/// Das Weitersagen-Zeichen: Sprechblase mit Herz („erzähl’s weiter“), in allen Apps gleich.
+/// Kein fertiges SF-Symbol — `bubble.left.fill` mit `heart.fill` darin. Die Blase nimmt die
+/// Vordergrundfarbe (App-Farbe), das Herz ist weiß ausgespart.
+struct TellFriendIcon: View {
+    var size: CGFloat = 20
+    var body: some View {
+        Image(systemName: "bubble.left.fill")
+            .font(.system(size: size))
+            .overlay {
+                Image(systemName: "heart.fill")
+                    .font(.system(size: size * 0.42, weight: .bold))
+                    .foregroundStyle(.white)
+                    .offset(y: -size * 0.07)
+            }
+            .accessibilityHidden(true)
+    }
+}
+
+/// Auf dem Startbildschirm erscheint das Weitersagen-Zeichen nur bei jedem fünften Start
+/// (Wunsch des Nutzers, 24.11.2026) — immer erreichbar bleibt es oben in den Einstellungen.
+/// `-tellFriendAlways YES` zeigt es immer (Store-Bilder, Vorführung).
+enum TellFriendSchedule {
+    static let every = 5
+    static let key = "tellFriendLaunches"
+
+    static func onHome(launch n: Int) -> Bool { n > 0 && n % every == 0 }
+
+    /// Zählt diesen Start genau einmal je Prozess (beim ersten Zugriff) und sagt, ob das Zeichen heute kommt.
+    static let showOnHome: Bool = {
+        let d = UserDefaults.standard
+        if d.bool(forKey: "tellFriendAlways") { return true }
+        let n = d.integer(forKey: key) + 1
+        d.set(n, forKey: key)
+        return onHome(launch: n)
+    }()
+}

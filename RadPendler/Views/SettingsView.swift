@@ -374,6 +374,22 @@ struct SettingsView: View {
     var body: some View {
         @Bindable var settings = settings
         Page(title: L("Einstellungen")) {
+                // Ganz oben und für sich (Nutzer, 24.11.2026): unter „Hilfe und
+                // Rechtliches“ fand es niemand.
+                Section {
+                    Button {
+                        sharing = true
+                    } label: {
+                        Label {
+                            Text(L("%@ weitersagen", ShareInvite.app.appName))
+                        } icon: {
+                            TellFriendIcon(size: 17).foregroundStyle(Theme.accent)
+                        }
+                    }
+                    // Text schwarz wie eine Zeile, nur das Zeichen grün.
+                    .tint(.primary)
+                    .sheet(isPresented: $sharing) { ShareAppView() }
+                }
                 Section {
                     Picker(L("Ausrichtung"), selection: $settings.orientation) {
                         ForEach(OrientationLock.allCases, id: \.self) { o in
@@ -423,12 +439,6 @@ struct SettingsView: View {
                     Link(destination: URL(string: "https://github.com/DeepSkyPlan/RadPendler")!) {
                         Label(L("Quelltext auf GitHub"), systemImage: "chevron.left.forwardslash.chevron.right")
                     }
-                    Button {
-                        sharing = true
-                    } label: {
-                        Label(L("%@ weitersagen", ShareInvite.app.appName), systemImage: "square.and.arrow.up")
-                    }
-                    .sheet(isPresented: $sharing) { ShareAppView() }
                 } header: {
                     Text(L("Hilfe und Rechtliches"))
                 } footer: {
