@@ -1,6 +1,6 @@
 # Changelog
 
-## Unveröffentlicht — Weitersagen
+## 1.28 (Build 68) — Weitersagen
 
 - **„RadPendler weitersagen“** in den Einstellungen unter „Hilfe und Rechtliches“: ein Blatt mit eigenem,
   änderbarem Text (der Vorschlag lässt sich wiederherstellen), darunter der App-Store-Link. Senden über das
