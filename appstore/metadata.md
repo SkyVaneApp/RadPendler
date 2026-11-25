@@ -48,7 +48,7 @@ Was seit der 1.8.1-Liste dazugekommen ist; alles andere gilt wie dort. Im Store 
 6. **Kopfzeile und Suchergebnisse** (neuer Abschnitt in App Store Connect seit iOS 27): leer
    lassen. Das sind freiwillige Werbeflächen; ohne sie zeigt der Store die Screenshots.
 7. **Datenschutzseite vor dem Einreichen veröffentlichen**: `appstore/pages/radpendler-privacy/`
-   nach `deepskyplan.github.io/radpendler-privacy`. Die Fassung im Repository nennt die
+   nach `https://skyvane.app/radpendler-privacy` (mit `~/_claude.code/SkyVane/tools/seiten.sh ~/_claude.code/RadPendler`). Die Fassung im Repository nennt die
    Adressen an externe Dienste im ersten Absatz und beschreibt die Aufzeichnung.
 8. App-Datenschutz-Fragebogen unverändert. Übertragen wird nichts Neues: die Profile für
    „ruhig“ und „optimal“ gehen als Profiltext an brouter.de, ohne Koordinaten oder Kennung.
@@ -166,9 +166,9 @@ intern. In App Store Connect, auf der Versionsseite 0.12.1:
    Dateinummern. Die Bildtexte stehen weiter unten. **Hochkant**, weil die App
    hochkant ist
 4. **Beschreibung, Werbetext, Keywords, Untertitel** — wie unten
-5. **Support-URL** — https://deepskyplan.github.io/radpendler-app/#support
-6. **Marketing-URL** — https://deepskyplan.github.io/radpendler-app/
-7. **Datenschutz-URL** — https://deepskyplan.github.io/radpendler-privacy/
+5. **Support-URL** — https://skyvane.app/radpendler-app/#support
+6. **Marketing-URL** — https://skyvane.app/radpendler-app/
+7. **Datenschutz-URL** — https://skyvane.app/radpendler-privacy/
    (beide Seiten liegen fertig unter `appstore/pages/`; die Repositories dafür
    gibt es noch nicht — siehe Checkliste am Ende)
 8. **App-Datenschutz** — bis 1.0 „Nein“ auf jede Erhebungskategorie. **Seit 1.1
@@ -707,7 +707,7 @@ Datenschutz.
 
 ## Support-URL
 
-https://deepskyplan.github.io/radpendler-app/#support
+https://skyvane.app/radpendler-app/#support
 
 Das App-Repository ist zwar öffentlich, aber ein Issue-Tracker ist keine
 Support-Seite; die Marketingseite trägt den Abschnitt „Support“ mit der
@@ -715,7 +715,7 @@ Adresse, an die geschrieben wird, und was in die Mail gehört.
 
 ## Marketing-URL
 
-https://deepskyplan.github.io/radpendler-app/
+https://skyvane.app/radpendler-app/
 
 Quelle: `appstore/pages/radpendler-app/index.html` in diesem Repository,
 gedacht für ein eigenes öffentliches Repository `DeepSkyPlan/radpendler-app`
@@ -723,7 +723,7 @@ mit GitHub Pages aus `main` — so wie `vorsim-app` und `vorsim-privacy`.
 
 ## Datenschutz-URL
 
-https://deepskyplan.github.io/radpendler-privacy/
+https://skyvane.app/radpendler-privacy/
 
 Quelle: `appstore/pages/radpendler-privacy/index.html`, gedacht für
 `DeepSkyPlan/radpendler-privacy`.

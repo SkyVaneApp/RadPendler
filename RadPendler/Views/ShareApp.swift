@@ -15,7 +15,7 @@ struct ShareInvite: Equatable {
         ShareInvite(
             appName: "RadPendler",
             appStoreID: "6813997635",
-            fallbackURL: URL(string: "https://deepskyplan.github.io/radpendler-app/")!,
+            fallbackURL: URL(string: "https://skyvane.app/radpendler-app/")!,
             defaultText: L("Schau dir RadPendler an: plant deinen Weg zur Arbeit mit Rad, Bahn oder beidem — mit Ampeln, Regen und echter Abfahrtszeit.")
         )
     }

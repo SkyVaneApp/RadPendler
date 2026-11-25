@@ -414,10 +414,10 @@ struct SettingsView: View {
                 Section {
                     // Kontakt als Seite, nicht als Adresse: eine Adresse im
                     // Programm ist eine Adresse, die jeder mitliest.
-                    Link(destination: URL(string: "https://deepskyplan.github.io/radpendler-app/#support")!) {
+                    Link(destination: URL(string: "https://skyvane.app/radpendler-app/#support")!) {
                         Label(L("Hilfe und Rückmeldung"), systemImage: "questionmark.circle")
                     }
-                    Link(destination: URL(string: "https://deepskyplan.github.io/radpendler-privacy/")!) {
+                    Link(destination: URL(string: "https://skyvane.app/radpendler-privacy/")!) {
                         Label(L("Datenschutz"), systemImage: "hand.raised")
                     }
                     Link(destination: URL(string: "https://github.com/DeepSkyPlan/RadPendler")!) {

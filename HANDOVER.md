@@ -68,7 +68,7 @@ Drei Dinge, die zur *öffentlichen* Fassung gehören und deshalb bis dahin liege
 die Seite im Netz muss beschreiben, was die App im Store tut, nicht was TestFlight kann:
 
 1. **Datenschutzseite nachziehen.** `appstore/pages/radpendler-privacy/index.html` (10,3 kB,
-   beschreibt die Fahrtaufzeichnung) nach `deepskyplan.github.io/radpendler-privacy`. Online
+   beschreibt die Fahrtaufzeichnung) nach `https://skyvane.app/radpendler-privacy` (mit `~/_claude.code/SkyVane/tools/seiten.sh ~/_claude.code/RadPendler`). Online
    steht Stand 24.09.2026 noch die alte Fassung (8,0 kB, ein „Standort", kein Wort zur
    Aufzeichnung) — richtig für 1.0, falsch für alles ab 1.1.
    Entscheidung des Nutzers: erst mit der Veröffentlichung der neuen Version.

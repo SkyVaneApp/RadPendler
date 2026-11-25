@@ -1,5 +1,9 @@
 # Changelog
 
+## Unveröffentlicht — Support- und Datenschutzadressen auf skyvane.app, Kontakt info@skyvane.app
+
+- Links in den Einstellungen (Support, Datenschutz), Weitersagen-Ersatzlink, Store-Felder und die Seiten unter `appstore/pages/` zeigen auf `https://skyvane.app/radpendler-app/` bzw. `-privacy/`, Kontakt `info@skyvane.app`. `veroeffentlichen.sh` ist stillgelegt (Seiten jetzt per `SkyVane/tools/seiten.sh`).
+
 ## 1.28 (Build 68) — Weitersagen
 
 - **„RadPendler weitersagen“** in den Einstellungen unter „Hilfe und Rechtliches“: ein Blatt mit eigenem,
